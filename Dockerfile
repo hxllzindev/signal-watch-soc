@@ -4,6 +4,7 @@ ENV NODE_ENV=production \
     PORT=5000
 
 WORKDIR /app
+RUN apk upgrade --no-cache
 COPY --chown=node:node package.json ./
 COPY --chown=node:node src ./src
 

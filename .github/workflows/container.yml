@@ -20,13 +20,14 @@ jobs:
           context: .
           load: true
           tags: signal-watch-soc:ci
-      - uses: aquasecurity/trivy-action@0.36.0
+      - uses: aquasecurity/trivy-action@v0.36.0
         with:
           image-ref: signal-watch-soc:ci
           format: sarif
           output: trivy-results.sarif
           severity: CRITICAL,HIGH
           ignore-unfixed: true
+          exit-code: 1
       - uses: github/codeql-action/upload-sarif@v4
         with:
           sarif_file: trivy-results.sarif
