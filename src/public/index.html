@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Signal Watch, uma plataforma Mini SIEM para operações de segurança.">
+    <title>Signal Watch | SOC Console</title>
+    <link rel="stylesheet" href="/styles.css">
+  </head>
+  <body>
+    <aside class="sidebar">
+      <a class="brand" href="#overview" aria-label="Signal Watch">
+        <span class="brand-mark">SW</span>
+        <span><strong>Signal Watch</strong><small>SOC Console</small></span>
+      </a>
+      <nav aria-label="Navegação principal">
+        <button class="nav-item active" data-view="overview"><span class="nav-icon">01</span>Visão geral</button>
+        <button class="nav-item" data-view="alerts"><span class="nav-icon">02</span>Alertas <span id="nav-alert-count" class="nav-count">0</span></button>
+        <button class="nav-item" data-view="hunt"><span class="nav-icon">03</span>Threat hunt</button>
+        <button class="nav-item" data-view="cases"><span class="nav-icon">04</span>Casos</button>
+        <button class="nav-item" data-view="rules"><span class="nav-icon">05</span>Regras</button>
+      </nav>
+      <div class="sidebar-foot">
+        <span class="status-dot"></span>
+        <span><strong>Coleta ativa</strong><small id="source-status">0 fontes</small></span>
+      </div>
+    </aside>
+
+    <main>
+      <header class="topbar">
+        <div>
+          <button id="mobile-menu" class="icon-button mobile-only" type="button" title="Abrir menu" aria-label="Abrir menu">☰</button>
+          <span class="environment">PRODUCTION SOC</span>
+        </div>
+        <div class="top-actions">
+          <label class="role-control">Perfil
+            <select id="role-select">
+              <option value="analyst">Analista</option>
+              <option value="lead">Líder SOC</option>
+              <option value="viewer">Visualizador</option>
+            </select>
+          </label>
+          <button id="ingest-button" class="secondary-button" type="button">Ingerir JSON</button>
+          <button id="simulate-button" class="primary-button" type="button">Simular ataque</button>
+        </div>
+      </header>
+
+      <section id="view-overview" class="view active" aria-labelledby="overview-title">
+        <div class="page-heading">
+          <div><p class="eyebrow">OPERATIONS / OVERVIEW</p><h1 id="overview-title">Visão geral do SOC</h1><p>Telemetria, detecções e investigações em um único fluxo.</p></div>
+          <span id="last-refresh" class="refresh-label">Atualizando...</span>
+        </div>
+        <div id="metrics" class="metric-grid"></div>
+        <div class="overview-grid">
+          <section class="panel chart-panel"><div class="panel-heading"><div><p class="eyebrow">ÚLTIMAS 6 HORAS</p><h2>Volume de alertas</h2></div><span class="live-label">LIVE</span></div><div id="alert-trend" class="bar-chart"></div></section>
+          <section class="panel"><div class="panel-heading"><div><p class="eyebrow">RISCO ATIVO</p><h2>Severidade</h2></div></div><div id="severity-list" class="severity-list"></div></section>
+        </div>
+        <div class="overview-grid wide-left">
+          <section class="panel"><div class="panel-heading"><div><p class="eyebrow">TRIAGEM</p><h2>Alertas recentes</h2></div><button class="text-button" data-go="alerts">Ver todos</button></div><div id="recent-alerts" class="table-shell"></div></section>
+          <section class="panel"><div class="panel-heading"><div><p class="eyebrow">PIPELINE</p><h2>Fontes de dados</h2></div></div><div id="sources-list" class="source-list"></div></section>
+        </div>
+        <section class="panel tactics-panel"><div class="panel-heading"><div><p class="eyebrow">MITRE ATT&CK</p><h2>Táticas observadas</h2></div></div><div id="tactics-list" class="tactics-list"></div></section>
+      </section>
+
+      <section id="view-alerts" class="view" aria-labelledby="alerts-title">
+        <div class="page-heading"><div><p class="eyebrow">DETECTION / TRIAGE</p><h1 id="alerts-title">Fila de alertas</h1><p>Priorize, atribua e documente cada sinal detectado.</p></div></div>
+        <div class="filterbar">
+          <label>Severidade<select id="alert-severity"><option value="">Todas</option><option>critical</option><option>high</option><option>medium</option><option>low</option></select></label>
+          <label>Status<select id="alert-status"><option value="">Todos</option><option>new</option><option>investigating</option><option>contained</option><option>closed</option></select></label>
+          <span id="alert-result-count" class="result-count"></span>
+        </div>
+        <div id="alerts-table" class="table-shell full-table"></div>
+      </section>
+
+      <section id="view-hunt" class="view" aria-labelledby="hunt-title">
+        <div class="page-heading"><div><p class="eyebrow">INVESTIGATION / SEARCH</p><h1 id="hunt-title">Threat hunt</h1><p>Pesquise indicadores e comportamentos na telemetria normalizada.</p></div></div>
+        <form id="hunt-form" class="huntbar">
+          <label class="search-field">Consulta<input id="hunt-query" type="search" placeholder="IP, usuário, host, processo ou caminho HTTP"></label>
+          <label>Fonte<select id="hunt-source"><option value="">Todas</option><option>identity</option><option>web</option><option>endpoint</option><option>network</option><option>cloud</option></select></label>
+          <label>Categoria<select id="hunt-category"><option value="">Todas</option><option>authentication</option><option>web</option><option>process</option><option>network</option><option>cloud</option></select></label>
+          <label>Resultado<select id="hunt-outcome"><option value="">Todos</option><option>success</option><option>failure</option><option>unknown</option></select></label>
+          <button class="primary-button" type="submit">Pesquisar</button>
+        </form>
+        <div class="hunt-summary"><span id="hunt-count">0 eventos</span><span>Limite: 200 resultados</span></div>
+        <div id="events-table" class="table-shell full-table"></div>
+      </section>
+
+      <section id="view-cases" class="view" aria-labelledby="cases-title">
+        <div class="page-heading"><div><p class="eyebrow">INCIDENT RESPONSE</p><h1 id="cases-title">Casos de investigação</h1><p>Consolide evidências, decisões e progresso de contenção.</p></div></div>
+        <div id="cases-list" class="case-grid"></div>
+      </section>
+
+      <section id="view-rules" class="view" aria-labelledby="rules-title">
+        <div class="page-heading"><div><p class="eyebrow">DETECTION ENGINEERING</p><h1 id="rules-title">Regras de detecção</h1><p>Controles de correlação e correspondência mapeados ao MITRE ATT&CK.</p></div><span class="permission-hint">Edição requer perfil Líder SOC</span></div>
+        <div id="rules-table" class="table-shell full-table"></div>
+      </section>
+    </main>
+
+    <aside id="detail-drawer" class="drawer" aria-hidden="true"><div id="drawer-content"></div></aside>
+    <div id="drawer-backdrop" class="backdrop"></div>
+
+    <dialog id="ingest-dialog">
+      <form id="ingest-form" class="dialog-form">
+        <div class="dialog-heading"><div><p class="eyebrow">DATA PIPELINE</p><h2>Ingerir eventos</h2></div><button class="icon-button close-dialog" type="button" aria-label="Fechar">×</button></div>
+        <label>Fonte<select id="ingest-source"><option>identity</option><option>web</option><option>endpoint</option><option>network</option><option>cloud</option><option>generic</option></select></label>
+        <label>Eventos JSON<textarea id="ingest-json" rows="13" spellcheck="false"></textarea></label>
+        <p class="form-help">Envie uma lista com até 1.000 eventos. A normalização e as regras são executadas imediatamente.</p>
+        <div class="dialog-actions"><button class="secondary-button close-dialog" type="button">Cancelar</button><button class="primary-button" type="submit">Ingerir e analisar</button></div>
+      </form>
+    </dialog>
+
+    <dialog id="case-dialog">
+      <form id="case-form" class="dialog-form">
+        <div class="dialog-heading"><div><p class="eyebrow">INCIDENT RESPONSE</p><h2>Criar caso</h2></div><button class="icon-button close-dialog" type="button" aria-label="Fechar">×</button></div>
+        <input id="case-alert-id" type="hidden">
+        <label>Título<input id="case-title" maxlength="240" required></label>
+        <label>Descrição<textarea id="case-description" rows="4"></textarea></label>
+        <div class="form-row"><label>Severidade<select id="case-severity"><option>critical</option><option>high</option><option selected>medium</option><option>low</option></select></label><label>Responsável<input id="case-owner" value="Ana SOC"></label></div>
+        <div class="dialog-actions"><button class="secondary-button close-dialog" type="button">Cancelar</button><button class="primary-button" type="submit">Criar investigação</button></div>
+      </form>
+    </dialog>
+
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+    <script type="module" src="/app.js"></script>
+  </body>
+</html>

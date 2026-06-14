@@ -1,0 +1,15 @@
+{
+  "name": "signal-watch-soc",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Mini SIEM and SOC investigation platform for portfolio demonstrations.",
+  "scripts": {
+    "start": "node src/server.js",
+    "test": "node --test",
+    "check": "node --check src/server.js && node --check src/public/app.js"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
